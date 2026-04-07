@@ -1,3 +1,4 @@
+import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { StatusBadge } from '@/components/shared/status-badge'
