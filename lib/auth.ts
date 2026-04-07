@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
@@ -23,20 +24,19 @@ export const authOptions: NextAuthOptions = {
 
         if (!user || !user.isActive) return null
 
-        // In production, use bcrypt to verify password
-        // For dev seed, accept any password for seeded users
-        if (process.env.NODE_ENV === 'development') {
-          return {
-            id: String(user.id),
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            warehouseId: user.warehouse_id,
-            clientId: user.client_id,
-          }
-        }
+        if (!user.passwordHash) return null
 
-        return null
+        const passwordValid = await bcrypt.compare(credentials.password, user.passwordHash)
+        if (!passwordValid) return null
+
+        return {
+          id: String(user.id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          warehouseId: user.warehouse_id,
+          clientId: user.client_id,
+        }
       },
     }),
   ],

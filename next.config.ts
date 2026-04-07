@@ -1,11 +1,14 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
-  },
+  serverExternalPackages: ['@prisma/client', 'prisma'],
   images: {
-    domains: ['shipstc.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'shipstc.com',
+      },
+    ],
   },
 }
 
