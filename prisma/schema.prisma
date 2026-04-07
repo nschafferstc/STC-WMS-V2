@@ -1,0 +1,474 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  STC_EXECUTIVE
+  STC_OPS_MANAGER
+  STC_COORDINATOR
+  STC_READ_ONLY
+  WAREHOUSE_OPS
+  CLIENT_USER
+}
+
+enum ASNStatus {
+  SCHEDULED
+  IN_TRANSIT
+  RECEIVED
+  CANCELLED
+}
+
+enum ReceiptStatus {
+  PENDING
+  COMPLETE
+  DISCREPANCY
+}
+
+enum OrderStatus {
+  DRAFT
+  ALLOCATED
+  PARTIAL
+  READY
+  AT_RISK
+  COMPLETE
+  CANCELLED
+}
+
+enum LoadType {
+  PALLETIZED
+  FLOOR_LOADED
+  MIXED
+}
+
+enum ShipmentStatus {
+  PENDING_PICKUP
+  IN_TRANSIT
+  DELIVERED
+  EXCEPTION
+}
+
+enum PackageStatus {
+  EXPECTED
+  RECEIVED
+  QUARANTINED
+  APPROVED
+  REJECTED
+}
+
+enum DiscrepancyStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum DiscrepancyType {
+  BOX_CRUSHED
+  WATER_DAMAGE
+  PACKAGING_DAMAGE
+  MISSING_ITEM
+  OVERAGE
+  WRONG_ITEM
+  OTHER
+}
+
+enum AlertType {
+  LOW_STOCK
+  AGING_INVENTORY
+  DISCREPANCY
+  UNEXPECTED_PACKAGE
+  ORDER_READY
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Warehouse {
+  id                 Int      @id @default(autoincrement())
+  code               String   @unique
+  company_name       String
+  stc_reference_name String
+  address            String
+  city               String
+  state              String
+  zip                String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  users         User[]
+  inventory     Inventory[]
+  inventoryLots InventoryLot[]
+  asns          ASN[]
+  orders        Order[]
+  pallets       Pallet[]
+  packages      Package[]
+  stores        Store[]
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+  skus     SKU[]
+  asns     ASN[]
+  orders   Order[]
+  users    User[]
+}
+
+model Project {
+  id                   Int      @id @default(autoincrement())
+  code                 String   @unique
+  name                 String
+  client_id            Int
+  client               Client   @relation(fields: [client_id], references: [id])
+  isRollout            Boolean  @default(false)
+  aging_threshold_days Int      @default(90)
+  dim_factor_override  Decimal? @db.Decimal(10, 2)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  stores       Store[]
+  skus         ProjectSKU[]
+  alertRules   AlertRule[]
+  bolTemplates BOLTemplate[]
+}
+
+model Store {
+  id                    Int       @id @default(autoincrement())
+  freight_stc_num       String
+  wh_stc_num            String
+  region                String
+  region_code           String
+  store_num             String
+  subcode               String
+  address               String
+  city                  String
+  state                 String
+  zip                   String
+  airport_code          String
+  origin_wh_tag         String?
+  project_id            Int
+  project               Project   @relation(fields: [project_id], references: [id])
+  assigned_warehouse_id Int
+  warehouse             Warehouse @relation(fields: [assigned_warehouse_id], references: [id])
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  orders Order[]
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String?
+  role         UserRole  @default(WAREHOUSE_OPS)
+  warehouse_id Int?
+  warehouse    Warehouse? @relation(fields: [warehouse_id], references: [id])
+  client_id    Int?
+  client       Client?   @relation(fields: [client_id], references: [id])
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model SKU {
+  id                  Int      @id @default(autoincrement())
+  code                String   @unique
+  name                String?
+  description         String   @db.Text
+  client_id           Int
+  client              Client   @relation(fields: [client_id], references: [id])
+  dims_l              Decimal? @db.Decimal(10, 2)
+  dims_w              Decimal? @db.Decimal(10, 2)
+  dims_h              Decimal? @db.Decimal(10, 2)
+  weight_lbs          Decimal? @db.Decimal(10, 2)
+  units_per_pallet    Int?
+  low_stock_threshold Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  projects      ProjectSKU[]
+  inventory     Inventory[]
+  inventoryLots InventoryLot[]
+  asnLines      ASNLine[]
+  receiptLines  ReceiptLine[]
+  orderLines    OrderLine[]
+  palletItems   PalletItem[]
+}
+
+model ProjectSKU {
+  project_id Int
+  sku_id     Int
+  project    Project @relation(fields: [project_id], references: [id])
+  sku        SKU     @relation(fields: [sku_id], references: [id])
+
+  @@id([project_id, sku_id])
+}
+
+model Inventory {
+  id           Int       @id @default(autoincrement())
+  warehouse_id Int
+  warehouse    Warehouse @relation(fields: [warehouse_id], references: [id])
+  sku_id       Int
+  sku          SKU       @relation(fields: [sku_id], references: [id])
+  on_hand      Int       @default(0)
+  allocated    Int       @default(0)
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([warehouse_id, sku_id])
+}
+
+model InventoryLot {
+  id            Int       @id @default(autoincrement())
+  sku_id        Int
+  sku           SKU       @relation(fields: [sku_id], references: [id])
+  warehouse_id  Int
+  warehouse     Warehouse @relation(fields: [warehouse_id], references: [id])
+  qty           Int
+  received_date DateTime
+  createdAt     DateTime  @default(now())
+}
+
+model ASN {
+  id            Int       @id @default(autoincrement())
+  code          String    @unique
+  client_id     Int
+  client        Client    @relation(fields: [client_id], references: [id])
+  warehouse_id  Int
+  warehouse     Warehouse @relation(fields: [warehouse_id], references: [id])
+  status        ASNStatus @default(SCHEDULED)
+  notes         String?   @db.Text
+  expected_date DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  lines    ASNLine[]
+  receipts InboundReceipt[]
+  packages Package[]
+}
+
+model ASNLine {
+  id           Int @id @default(autoincrement())
+  asn_id       Int
+  asn          ASN @relation(fields: [asn_id], references: [id])
+  sku_id       Int
+  sku          SKU @relation(fields: [sku_id], references: [id])
+  expected_qty Int
+}
+
+model InboundReceipt {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique @default(cuid())
+  asn_id      Int
+  asn         ASN           @relation(fields: [asn_id], references: [id])
+  status      ReceiptStatus @default(PENDING)
+  notes       String?       @db.Text
+  received_at DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  lines ReceiptLine[]
+}
+
+model ReceiptLine {
+  id               Int              @id @default(autoincrement())
+  receipt_id       Int
+  receipt          InboundReceipt   @relation(fields: [receipt_id], references: [id])
+  sku_id           Int
+  sku              SKU              @relation(fields: [sku_id], references: [id])
+  expected_qty     Int
+  received_qty     Int
+  discrepancy_type DiscrepancyType?
+  notes            String?          @db.Text
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  code         String      @unique
+  client_id    Int
+  client       Client      @relation(fields: [client_id], references: [id])
+  warehouse_id Int
+  warehouse    Warehouse   @relation(fields: [warehouse_id], references: [id])
+  store_id     Int?
+  store        Store?      @relation(fields: [store_id], references: [id])
+  load_type    LoadType    @default(PALLETIZED)
+  status       OrderStatus @default(DRAFT)
+  notes        String?     @db.Text
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  lines     OrderLine[]
+  pallets   Pallet[]
+  shipments Shipment[]
+}
+
+model OrderLine {
+  id          Int   @id @default(autoincrement())
+  order_id    Int
+  order       Order @relation(fields: [order_id], references: [id])
+  sku_id      Int
+  sku         SKU   @relation(fields: [sku_id], references: [id])
+  ordered_qty Int
+  allocated   Int   @default(0)
+  shipped     Int   @default(0)
+}
+
+model Pallet {
+  id             Int       @id @default(autoincrement())
+  code           String    @unique
+  warehouse_id   Int
+  warehouse      Warehouse @relation(fields: [warehouse_id], references: [id])
+  order_id       Int?
+  order          Order?    @relation(fields: [order_id], references: [id])
+  length         Decimal?  @db.Decimal(10, 2)
+  width          Decimal?  @db.Decimal(10, 2)
+  height         Decimal?  @db.Decimal(10, 2)
+  weight_lbs     Decimal?  @db.Decimal(10, 2)
+  shrink_wrapped Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  items           PalletItem[]
+  shipmentPallets ShipmentPallet[]
+}
+
+model PalletItem {
+  id        Int    @id @default(autoincrement())
+  pallet_id Int
+  pallet    Pallet @relation(fields: [pallet_id], references: [id])
+  sku_id    Int
+  sku       SKU    @relation(fields: [sku_id], references: [id])
+  qty       Int
+}
+
+model Shipment {
+  id           Int            @id @default(autoincrement())
+  code         String         @unique
+  order_id     Int
+  order        Order          @relation(fields: [order_id], references: [id])
+  status       ShipmentStatus @default(PENDING_PICKUP)
+  carrier      String?
+  pro_number   String?
+  tracking     String?
+  shipped_at   DateTime?
+  delivered_at DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  pallets ShipmentPallet[]
+}
+
+model ShipmentPallet {
+  shipment_id Int
+  pallet_id   Int
+  shipment    Shipment @relation(fields: [shipment_id], references: [id])
+  pallet      Pallet   @relation(fields: [pallet_id], references: [id])
+
+  @@id([shipment_id, pallet_id])
+}
+
+model Package {
+  id           Int           @id @default(autoincrement())
+  code         String        @unique
+  warehouse_id Int
+  warehouse    Warehouse     @relation(fields: [warehouse_id], references: [id])
+  asn_id       Int?
+  asn          ASN?          @relation(fields: [asn_id], references: [id])
+  status       PackageStatus @default(EXPECTED)
+  carrier      String?
+  tracking     String?
+  notes        String?       @db.Text
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Discrepancy {
+  id          Int               @id @default(autoincrement())
+  type        String
+  source_ref  String
+  description String            @db.Text
+  status      DiscrepancyStatus @default(OPEN)
+  resolution  String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model BOLTemplate {
+  id         Int      @id @default(autoincrement())
+  name       String
+  project_id Int?
+  project    Project? @relation(fields: [project_id], references: [id])
+  template   String   @db.Text
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AlertRule {
+  id         Int       @id @default(autoincrement())
+  name       String
+  type       AlertType
+  project_id Int?
+  project    Project?  @relation(fields: [project_id], references: [id])
+  threshold  Decimal?  @db.Decimal(10, 2)
+  recipients String[]
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model SystemSetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+}
