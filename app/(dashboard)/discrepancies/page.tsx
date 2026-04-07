@@ -1,3 +1,4 @@
+import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'

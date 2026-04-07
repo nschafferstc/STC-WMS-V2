@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { ChevronUp, ChevronDown, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'

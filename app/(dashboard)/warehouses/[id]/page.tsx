@@ -1,3 +1,4 @@
+import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/shared/page-header'
