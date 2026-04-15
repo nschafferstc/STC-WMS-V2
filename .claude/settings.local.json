@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(ls -la \"/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V2 App/app/\\(auth\\)/\")",
+      "Bash(pandoc --version)",
+      "Bash(mkdir -p /tmp/wms_spec_unpack)",
+      "Bash(python 'C:/Users/Nick Schaffer/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/f1e5077d-83d9-487b-99dd-893936bcc94b/6d260936-d810-425b-8714-2433b8835909/skills/docx/scripts/office/unpack.py' '/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V3 App/STC_WMS_Product_Specification_v1.0.docx' /tmp/wms_spec_unpack)",
+      "Bash(py --version)",
+      "Bash(unzip -o '/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V3 App/STC_WMS_Product_Specification_v1.0.docx' -d /tmp/wms_spec_unpack)",
+      "Bash(mkdir -p \"/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V2 App/app/api/transfers/[id]\")",
+      "Bash(mkdir -p \"/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V2 App/app/api/returns/[id]\")",
+      "Bash(mkdir -p \"/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V2 App/app/\\(dashboard\\)/transfers/[id]\")",
+      "Bash(mkdir -p \"/c/Users/Nick Schaffer/OneDrive - STC Logistics/Desktop/Claude/WMS V2 App/app/\\(dashboard\\)/returns/[id]\")"
+    ]
+  }
+}

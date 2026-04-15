@@ -109,6 +109,9 @@ model Warehouse {
   pallets       Pallet[]
   packages      Package[]
   stores        Store[]
+  transfersFrom TransferOrder[] @relation("TransferFrom")
+  transfersTo   TransferOrder[] @relation("TransferTo")
+  returns       Return[]
 }
 
 model Client {
@@ -123,6 +126,7 @@ model Client {
   asns     ASN[]
   orders   Order[]
   users    User[]
+  returns  Return[]
 }
 
 model Project {
@@ -242,6 +246,8 @@ model SKU {
   receiptLines  ReceiptLine[]
   orderLines    OrderLine[]
   palletItems   PalletItem[]
+  transferLines TransferLine[]
+  returnLines   ReturnLine[]
 }
 
 model ProjectSKU {
@@ -289,6 +295,11 @@ model ASN {
   expected_date DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  carrier       String?
+  pro_number    String?
+  bol_number    String?
+  container_num String?
+  shipment_type String?   @default("DOMESTIC")
 
   lines    ASNLine[]
   receipts InboundReceipt[]
@@ -471,4 +482,96 @@ model SystemSetting {
   value       String   @db.Text
   description String?
   updatedAt   DateTime @updatedAt
+}
+
+// ─── V3 Additions ─────────────────────────────────────────────────────────────
+
+enum TransferStatus {
+  PENDING
+  CONFIRMED
+  IN_TRANSIT
+  RECEIVED
+  CANCELLED
+}
+
+enum ReturnType {
+  JOB_SITE
+  CUSTOMER
+  VENDOR
+}
+
+enum ReturnStatus {
+  PENDING
+  RECEIVED
+  RESTOCKED
+  QUARANTINED
+  RETURNED_TO_VENDOR
+}
+
+model TransferOrder {
+  id                Int            @id @default(autoincrement())
+  code              String         @unique
+  from_warehouse_id Int
+  from_warehouse    Warehouse      @relation("TransferFrom", fields: [from_warehouse_id], references: [id])
+  to_warehouse_id   Int
+  to_warehouse      Warehouse      @relation("TransferTo", fields: [to_warehouse_id], references: [id])
+  client_id         Int?
+  status            TransferStatus @default(PENDING)
+  notes             String?        @db.Text
+  confirmed_at      DateTime?
+  received_at       DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  lines TransferLine[]
+}
+
+model TransferLine {
+  id            Int           @id @default(autoincrement())
+  transfer_id   Int
+  transfer      TransferOrder @relation(fields: [transfer_id], references: [id])
+  sku_id        Int
+  sku           SKU           @relation(fields: [sku_id], references: [id])
+  qty_requested Int
+  qty_sent      Int?
+  qty_received  Int?
+}
+
+model Return {
+  id           Int          @id @default(autoincrement())
+  code         String       @unique
+  warehouse_id Int
+  warehouse    Warehouse    @relation(fields: [warehouse_id], references: [id])
+  client_id    Int
+  client       Client       @relation(fields: [client_id], references: [id])
+  return_type  ReturnType   @default(JOB_SITE)
+  status       ReturnStatus @default(PENDING)
+  notes        String?      @db.Text
+  received_at  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  lines ReturnLine[]
+}
+
+model ReturnLine {
+  id        Int    @id @default(autoincrement())
+  return_id Int
+  return    Return @relation(fields: [return_id], references: [id])
+  sku_id    Int
+  sku       SKU    @relation(fields: [sku_id], references: [id])
+  qty       Int
+  condition String @default("GOOD")
+  notes     String? @db.Text
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  user_id   Int?
+  user_name String?
+  action    String
+  entity    String
+  entity_id String?
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
 }

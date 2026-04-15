@@ -160,3 +160,77 @@ export async function sendUnexpectedPackageAlert(params: {
     `,
   })
 }
+
+export async function sendASNNotification(params: {
+  asnCode: string
+  warehouseName: string
+  clientName: string
+  expectedDate: string
+  totalLines: number
+  recipients: string[]
+}): Promise<void> {
+  await sendEmail({
+    to: params.recipients,
+    subject: `[STC WMS] New ASN ${params.asnCode} — Action Required`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #1a2744; color: white; padding: 20px;">
+          <h1 style="margin: 0; font-size: 22px;">STC Logistics WMS</h1>
+          <p style="margin: 5px 0 0; opacity: 0.8; font-size: 13px;">Inbound Shipment Notification</p>
+        </div>
+        <div style="padding: 24px; background: #f8f9fa;">
+          <h2 style="color: #1a2744; margin-top: 0;">New ASN: ${params.asnCode}</h2>
+          <p>A new inbound shipment has been scheduled for your warehouse.</p>
+          <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee; width: 40%;">Client</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.clientName}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Warehouse</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.warehouseName}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Expected Date</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.expectedDate}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666;">SKU Lines</td><td style="padding: 10px 14px;">${params.totalLines}</td></tr>
+          </table>
+          <div style="margin-top: 20px; padding: 14px; background: #fff3cd; border-left: 4px solid #f4811f; border-radius: 4px;">
+            <strong>Action Required:</strong> Please log in to the STC WMS to acknowledge this ASN and prepare for receiving.
+          </div>
+        </div>
+        <div style="padding: 14px; background: #e9ecef; text-align: center; font-size: 11px; color: #666;">
+          STC Logistics WMS — Automated Notification
+        </div>
+      </div>
+    `,
+  })
+}
+
+export async function sendOrderReadyNotification2(params: {
+  orderCode: string
+  clientName: string
+  warehouseName: string
+  palletCount: number
+  recipients: string[]
+}): Promise<void> {
+  await sendEmail({
+    to: params.recipients,
+    subject: `[STC WMS] Order ${params.orderCode} Ready for Pickup`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #1a2744; color: white; padding: 20px;">
+          <h1 style="margin: 0; font-size: 22px;">STC Logistics WMS</h1>
+          <p style="margin: 5px 0 0; opacity: 0.8; font-size: 13px;">Order Ready Notification</p>
+        </div>
+        <div style="padding: 24px; background: #f8f9fa;">
+          <h2 style="color: #1a2744; margin-top: 0;">Order Ready: ${params.orderCode}</h2>
+          <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee; width: 40%;">Order</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.orderCode}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Client</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.clientName}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Warehouse</td><td style="padding: 10px 14px; border-bottom: 1px solid #eee;">${params.warehouseName}</td></tr>
+            <tr><td style="padding: 10px 14px; font-weight: bold; color: #666;">Pallets</td><td style="padding: 10px 14px;">${params.palletCount}</td></tr>
+          </table>
+          <div style="margin-top: 20px; padding: 14px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+            <strong>This order is packed and ready for carrier pickup.</strong> Please log in to the STC WMS to assign a carrier and schedule pickup.
+          </div>
+        </div>
+        <div style="padding: 14px; background: #e9ecef; text-align: center; font-size: 11px; color: #666;">
+          STC Logistics WMS — Automated Notification
+        </div>
+      </div>
+    `,
+  })
+}

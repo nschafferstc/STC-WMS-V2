@@ -22,6 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         client: true,
         warehouse: true,
         lines: { include: { sku: true } },
+        pallets: true,
       },
     })
 
@@ -65,6 +66,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         client: order.client.name,
         recipients,
       }).catch(e => console.error('[sendOrderReadyNotification]', e))
+    }
+
+    // Send email notification to STC staff
+    try {
+      const stcUsers = await prisma.user.findMany({
+        where: { role: { in: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] }, isActive: true },
+        select: { email: true }
+      })
+      const stcRecipients = stcUsers.map(u => u.email)
+      if (stcRecipients.length > 0) {
+        const { sendOrderReadyNotification2 } = await import('@/services/email')
+        await sendOrderReadyNotification2({
+          orderCode: order.code,
+          clientName: order.client.name,
+          warehouseName: order.warehouse.stc_reference_name,
+          palletCount: order.pallets?.length ?? 0,
+          recipients: stcRecipients,
+        })
+      }
+    } catch (e) {
+      console.error('[Order Ready Email]', e)
     }
 
     return NextResponse.json(updated)

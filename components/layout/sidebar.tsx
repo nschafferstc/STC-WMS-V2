@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Package, Truck, ClipboardList, Warehouse,
-  FolderKanban, ArrowDownToLine, Ship, Settings, AlertTriangle, BoxIcon
+  FolderKanban, ArrowDownToLine, Ship, Settings, AlertTriangle,
+  BoxIcon, ArrowLeftRight, RotateCcw, BarChart3, FileText
 } from 'lucide-react'
 
 interface NavItem {
@@ -22,9 +23,13 @@ const navItems: NavItem[] = [
   { href: '/inventory', label: 'Inventory', icon: BoxIcon },
   { href: '/receiving', label: 'Receiving', icon: ArrowDownToLine },
   { href: '/orders', label: 'Orders', icon: ClipboardList },
+  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight },
+  { href: '/returns', label: 'Returns', icon: RotateCcw },
   { href: '/shipments', label: 'Shipments', icon: Ship },
   { href: '/packages', label: 'Packages', icon: Package },
   { href: '/discrepancies', label: 'Discrepancies', icon: AlertTriangle },
+  { href: '/reports', label: 'Reports', icon: BarChart3, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] },
+  { href: '/audit', label: 'Audit Log', icon: FileText, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER'] },
   { href: '/admin', label: 'Admin', icon: Settings, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER'] },
 ]
 
@@ -37,13 +42,10 @@ export function Sidebar({ role }: { role?: string }) {
 
   return (
     <div className="w-56 flex-shrink-0 flex flex-col bg-[#1a2744] text-white">
-      {/* Logo */}
       <div className="p-4 border-b border-white/10">
         <div className="text-white font-bold text-lg tracking-tight">STC Logistics</div>
         <div className="text-[#f4811f] text-xs font-medium tracking-widest uppercase mt-0.5">WMS</div>
       </div>
-
-      {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {visibleItems.map((item) => {
           const Icon = item.icon
@@ -65,10 +67,8 @@ export function Sidebar({ role }: { role?: string }) {
           )
         })}
       </nav>
-
-      {/* Version */}
       <div className="p-4 border-t border-white/10 text-xs text-slate-500">
-        WMS v2.0
+        WMS v2.1
       </div>
     </div>
   )

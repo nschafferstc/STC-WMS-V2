@@ -36,11 +36,10 @@ async function main() {
 
   // ── Users ─────────────────────────────────────────────────────
   const pw = await bcrypt.hash('STC2024!', 12)
-  await prisma.user.upsert({ where: { email: 'nick.schaffer@stclogistics.com' }, update: {}, create: { name: 'Nick Schaffer', email: 'nick.schaffer@stclogistics.com', passwordHash: pw, role: 'STC_EXECUTIVE' } })
-  await prisma.user.upsert({ where: { email: 'natalie.santos@stclogistics.com' }, update: {}, create: { name: 'Natalie Santos', email: 'natalie.santos@stclogistics.com', passwordHash: pw, role: 'STC_OPS_MANAGER' } })
-  await prisma.user.upsert({ where: { email: 'jason.kuka@stclogistics.com' }, update: {}, create: { name: 'Jason Kuka', email: 'jason.kuka@stclogistics.com', passwordHash: pw, role: 'STC_COORDINATOR' } })
-  await prisma.user.upsert({ where: { email: 'frank.ferlito@stclogistics.com' }, update: {}, create: { name: 'Frank Ferlito', email: 'frank.ferlito@stclogistics.com', passwordHash: pw, role: 'STC_COORDINATOR' } })
-  await prisma.user.upsert({ where: { email: 'whlead.cmh@stclogistics.com' }, update: {}, create: { name: 'Columbus WH Lead', email: 'whlead.cmh@stclogistics.com', passwordHash: pw, role: 'WAREHOUSE_OPS', warehouse_id: wCMH.id } })
+  await prisma.user.upsert({ where: { email: 'nschaffer@shipstc.com' }, update: { name: 'Nick Schaffer', passwordHash: pw, role: 'STC_EXECUTIVE' }, create: { name: 'Nick Schaffer', email: 'nschaffer@shipstc.com', passwordHash: pw, role: 'STC_EXECUTIVE' } })
+  await prisma.user.upsert({ where: { email: 'rkohlmann@shipstc.com' }, update: { name: 'Rob Kohlmann', passwordHash: pw, role: 'STC_EXECUTIVE' }, create: { name: 'Rob Kohlmann', email: 'rkohlmann@shipstc.com', passwordHash: pw, role: 'STC_EXECUTIVE' } })
+  await prisma.user.upsert({ where: { email: 'fferlito@shipstc.com' }, update: { name: 'Frank Ferlito', passwordHash: pw, role: 'STC_EXECUTIVE' }, create: { name: 'Frank Ferlito', email: 'fferlito@shipstc.com', passwordHash: pw, role: 'STC_EXECUTIVE' } })
+  await prisma.user.upsert({ where: { email: 'jkuka@shipstc.com' }, update: { name: 'Jason Kuka', passwordHash: pw, role: 'STC_EXECUTIVE' }, create: { name: 'Jason Kuka', email: 'jkuka@shipstc.com', passwordHash: pw, role: 'STC_EXECUTIVE' } })
   console.log('✓ Users')
 
   // ── SKUs ──────────────────────────────────────────────────────

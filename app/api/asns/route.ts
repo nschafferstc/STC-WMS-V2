@@ -86,6 +86,28 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Send email notification to warehouse
+    try {
+      const warehouseUsers = await prisma.user.findMany({
+        where: { warehouse_id: asn.warehouse_id, isActive: true },
+        select: { email: true }
+      })
+      const recipients = warehouseUsers.map(u => u.email)
+      if (recipients.length > 0) {
+        const { sendASNNotification } = await import('@/services/email')
+        await sendASNNotification({
+          asnCode: asn.code,
+          warehouseName: asn.warehouse.stc_reference_name,
+          clientName: asn.client.name,
+          expectedDate: asn.expected_date ? new Date(asn.expected_date).toLocaleDateString() : 'TBD',
+          totalLines: body.lines?.length ?? 0,
+          recipients,
+        })
+      }
+    } catch (e) {
+      console.error('[ASN Email]', e)
+    }
+
     return NextResponse.json(asn, { status: 201 })
   } catch (err: any) {
     console.error('[POST /api/asns]', err)
