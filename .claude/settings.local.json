@@ -44,7 +44,11 @@
       "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\\\(dashboard\\)\\\\orders\\\\[id]\\\\edit\")",
       "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\\\(dashboard\\)\\\\receiving\\\\[id]\\\\edit\")",
       "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\\\(dashboard\\)\\\\discrepancies\\\\[id]\")",
-      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\\\(dashboard\\)\\\\inventory\\\\cycle-count\\\\[id]\")"
+      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\\\(dashboard\\)\\\\inventory\\\\cycle-count\\\\[id]\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\api\\\\orders\\\\[id]\\\\submit-review\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\api\\\\orders\\\\[id]\\\\approve\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\api\\\\orders\\\\[id]\\\\send-to-warehouse\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Nick Schaffer\\\\OneDrive - STC Logistics\\\\Desktop\\\\Claude\\\\WMS V2 App\\\\app\\\\api\\\\orders\\\\[id]\\\\warehouse-confirm\")"
     ]
   }
 }

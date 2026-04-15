@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Package, Truck, ClipboardList, Warehouse,
   FolderKanban, ArrowDownToLine, Ship, Settings, AlertTriangle,
-  BoxIcon, ArrowLeftRight, RotateCcw, BarChart3, FileText
+  BoxIcon, ArrowLeftRight, RotateCcw, BarChart3, FileText, MonitorDot
 } from 'lucide-react'
 
 interface NavItem {
@@ -17,6 +17,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { href: '/command-center', label: 'Command Center', icon: MonitorDot, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/projects', label: 'Projects', icon: FolderKanban },
   { href: '/warehouses', label: 'Warehouses', icon: Warehouse },
@@ -68,7 +69,7 @@ export function Sidebar({ role }: { role?: string }) {
         })}
       </nav>
       <div className="p-4 border-t border-white/10 text-xs text-slate-500">
-        WMS v2.2
+        WMS v2.3
       </div>
     </div>
   )

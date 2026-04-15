@@ -34,6 +34,10 @@ enum ReceiptStatus {
 
 enum OrderStatus {
   DRAFT
+  PENDING_REVIEW
+  APPROVED
+  SENT_TO_WAREHOUSE
+  WAREHOUSE_CONFIRMED
   ALLOCATED
   PARTIAL
   READY
@@ -354,12 +358,16 @@ model Order {
   warehouse    Warehouse   @relation(fields: [warehouse_id], references: [id])
   store_id     Int?
   store        Store?      @relation(fields: [store_id], references: [id])
-  load_type    LoadType    @default(PALLETIZED)
-  status       OrderStatus @default(DRAFT)
-  is_priority  Boolean     @default(false)
-  notes        String?     @db.Text
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  load_type               LoadType    @default(PALLETIZED)
+  status                  OrderStatus @default(DRAFT)
+  is_priority             Boolean     @default(false)
+  notes                   String?     @db.Text
+  submitted_at            DateTime?
+  approved_at             DateTime?
+  sent_to_warehouse_at    DateTime?
+  warehouse_confirmed_at  DateTime?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
 
   lines     OrderLine[]
   pallets   Pallet[]

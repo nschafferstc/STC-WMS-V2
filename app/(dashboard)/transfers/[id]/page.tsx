@@ -98,7 +98,7 @@ export default function TransferDetailPage({ params }: { params: { id: string } 
                 </tr>
               </thead>
               <tbody>
-                {transfer.lines.map(line => (
+                {transfer.lines.map((line: any) => (
                   <tr key={line.id} className="border-b border-slate-50 last:border-0">
                     <td className="px-4 py-3"><div className="font-mono text-xs text-slate-700">{line.sku.code}</div><div className="text-xs text-slate-500">{line.sku.description?.slice(0, 50)}</div></td>
                     <td className="px-4 py-3 text-right">{line.qty_requested}</td>

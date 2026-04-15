@@ -46,7 +46,7 @@ export default async function OrdersPage({
     orderBy: { updatedAt: 'desc' },
   })
 
-  const statusOptions = ['DRAFT', 'ALLOCATED', 'PARTIAL', 'READY', 'AT_RISK', 'COMPLETE', 'CANCELLED']
+  const statusOptions = ['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'SENT_TO_WAREHOUSE', 'WAREHOUSE_CONFIRMED', 'ALLOCATED', 'PARTIAL', 'READY', 'AT_RISK', 'COMPLETE', 'CANCELLED']
   const hasFilter = !!(searchParams.client_id || searchParams.project_id || searchParams.warehouse_id)
 
   return (
@@ -145,7 +145,7 @@ export default async function OrdersPage({
               <tr key={order.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
-                    {(order as any).is_priority && <Zap className="h-3 w-3 text-orange-500 flex-shrink-0" title="Priority" />}
+                    {(order as any).is_priority && <span title="Priority"><Zap className="h-3 w-3 text-orange-500 flex-shrink-0" /></span>}
                     <Link href={`/orders/${order.id}`} className="font-medium text-blue-600 hover:underline font-mono text-xs">
                       {order.code}
                     </Link>
