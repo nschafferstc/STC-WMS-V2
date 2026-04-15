@@ -2,7 +2,7 @@ import React from 'react'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
-import { Package, Activity } from 'lucide-react'
+import { Package, Activity, Clock, TrendingUp } from 'lucide-react'
 
 export default async function ReportsPage() {
   const session = await getServerSession(authOptions)
@@ -11,6 +11,8 @@ export default async function ReportsPage() {
   const reports = [
     { href: '/reports/inventory', title: 'Inventory Snapshot', description: 'Current on-hand quantities across all warehouses and SKUs', icon: Package, color: '#1a2744' },
     { href: '/reports/activity', title: 'Activity Report', description: 'ASNs, orders, receipts, transfers and returns over a date range', icon: Activity, color: '#f4811f' },
+    { href: '/reports/aging', title: 'Inventory Aging', description: 'Days on hand by lot — identify slow-moving and at-risk inventory (30/60/90+ day buckets)', icon: Clock, color: '#d97706' },
+    { href: '/reports/velocity', title: 'Stock Velocity', description: 'Fast vs slow movers based on actual shipments. Rank SKUs by units shipped in any period', icon: TrendingUp, color: '#16a34a' },
   ]
 
   return (

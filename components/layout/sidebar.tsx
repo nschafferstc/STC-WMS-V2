@@ -68,7 +68,7 @@ export function Sidebar({ role }: { role?: string }) {
         })}
       </nav>
       <div className="p-4 border-t border-white/10 text-xs text-slate-500">
-        WMS v2.1
+        WMS v2.2
       </div>
     </div>
   )

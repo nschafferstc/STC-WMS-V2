@@ -109,9 +109,11 @@ model Warehouse {
   pallets       Pallet[]
   packages      Package[]
   stores        Store[]
-  transfersFrom TransferOrder[] @relation("TransferFrom")
-  transfersTo   TransferOrder[] @relation("TransferTo")
-  returns       Return[]
+  transfersFrom        TransferOrder[]       @relation("TransferFrom")
+  transfersTo          TransferOrder[]       @relation("TransferTo")
+  returns              Return[]
+  inventoryAdjustments InventoryAdjustment[]
+  cycleCounts          CycleCount[]
 }
 
 model Client {
@@ -246,8 +248,10 @@ model SKU {
   receiptLines  ReceiptLine[]
   orderLines    OrderLine[]
   palletItems   PalletItem[]
-  transferLines TransferLine[]
-  returnLines   ReturnLine[]
+  transferLines        TransferLine[]
+  returnLines          ReturnLine[]
+  inventoryAdjustments InventoryAdjustment[]
+  cycleCountLines      CycleCountLine[]
 }
 
 model ProjectSKU {
@@ -352,6 +356,7 @@ model Order {
   store        Store?      @relation(fields: [store_id], references: [id])
   load_type    LoadType    @default(PALLETIZED)
   status       OrderStatus @default(DRAFT)
+  is_priority  Boolean     @default(false)
   notes        String?     @db.Text
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -574,4 +579,50 @@ model AuditLog {
   entity_id String?
   details   String?  @db.Text
   createdAt DateTime @default(now())
+}
+
+enum CycleCountStatus {
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+}
+
+model InventoryAdjustment {
+  id           Int       @id @default(autoincrement())
+  warehouse_id Int
+  warehouse    Warehouse @relation(fields: [warehouse_id], references: [id])
+  sku_id       Int
+  sku          SKU       @relation(fields: [sku_id], references: [id])
+  quantity     Int
+  reason       String
+  notes        String?   @db.Text
+  adjusted_by  String
+  createdAt    DateTime  @default(now())
+}
+
+model CycleCount {
+  id           Int              @id @default(autoincrement())
+  code         String           @unique
+  warehouse_id Int
+  warehouse    Warehouse        @relation(fields: [warehouse_id], references: [id])
+  status       CycleCountStatus @default(IN_PROGRESS)
+  counted_by   String
+  notes        String?          @db.Text
+  completed_at DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  lines CycleCountLine[]
+}
+
+model CycleCountLine {
+  id          Int        @id @default(autoincrement())
+  count_id    Int
+  count       CycleCount @relation(fields: [count_id], references: [id])
+  sku_id      Int
+  sku         SKU        @relation(fields: [sku_id], references: [id])
+  system_qty  Int
+  counted_qty Int?
+  variance    Int?
+  notes       String?    @db.Text
 }

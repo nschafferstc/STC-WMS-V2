@@ -99,9 +99,10 @@ export default async function DiscrepanciesPage({
             ) : discrepancies.map(d => (
               <tr
                 key={d.id}
-                className={`border-b border-slate-50 last:border-0 hover:bg-slate-50 ${d.status === 'OPEN' ? 'bg-red-50/20' : ''}`}
+                className={`border-b border-slate-50 last:border-0 hover:bg-slate-50 cursor-pointer ${d.status === 'OPEN' ? 'bg-red-50/20' : ''}`}
+                onClick={() => { window.location.href = `/discrepancies/${d.id}` }}
               >
-                <td className="px-4 py-3 font-mono text-xs font-medium">
+                <td className="px-4 py-3 font-mono text-xs font-medium text-blue-600">
                   DISC-{String(d.id).padStart(4, '0')}
                 </td>
                 <td className="px-4 py-3 text-slate-700">{d.type.replace(/_/g, ' ')}</td>

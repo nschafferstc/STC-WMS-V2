@@ -1,5 +1,7 @@
 import React from 'react'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { notFound } from 'next/navigation'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
@@ -9,6 +11,9 @@ import { OrderActions } from '@/components/orders/order-actions'
 import { PalletSection } from '@/components/orders/pallet-section'
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  const role = (session?.user as any)?.role
+
   const order = await prisma.order.findUnique({
     where: { id: parseInt(params.id) },
     include: {
@@ -45,7 +50,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               ` · Store #${order.store.store_num}, ${order.store.city}, ${order.store.state}`}
           </div>
         </div>
-        <OrderActions order={{ id: order.id, status: order.status, code: order.code }} />
+        <OrderActions order={{ id: order.id, status: order.status, code: order.code, is_priority: order.is_priority }} role={role} />
       </div>
 
       {/* Summary cards */}

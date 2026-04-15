@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(asn)
 }
 
-// PATCH /api/asns/[id] — update status
+// PATCH /api/asns/[id] — update fields and lines
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -37,16 +37,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   try {
     const body = await req.json()
-    const { status, notes } = body
+    const { status, notes, carrier, pro_number, expected_date, lines } = body
 
     const updateData: any = {}
     if (status) updateData.status = status
     if (notes !== undefined) updateData.notes = notes
+    if (carrier !== undefined) updateData.carrier = carrier || null
+    if (pro_number !== undefined) updateData.pro_number = pro_number || null
+    if (expected_date !== undefined) updateData.expected_date = expected_date ? new Date(expected_date) : null
 
     const asn = await prisma.aSN.update({
       where: { id: parseInt(params.id) },
       data: updateData,
     })
+
+    // If lines provided, replace them
+    if (lines && Array.isArray(lines)) {
+      await prisma.aSNLine.deleteMany({ where: { asn_id: asn.id } })
+      await prisma.aSNLine.createMany({
+        data: lines.map((l: any) => ({
+          asn_id: asn.id,
+          sku_id: parseInt(l.sku_id),
+          expected_qty: parseInt(l.expected_qty),
+        })),
+      })
+    }
 
     return NextResponse.json(asn)
   } catch (err: any) {

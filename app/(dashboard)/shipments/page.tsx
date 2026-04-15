@@ -2,10 +2,10 @@ import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import { Plus } from 'lucide-react'
 
 export default async function ShipmentsPage() {
   const session = await getServerSession(authOptions)
@@ -20,9 +20,22 @@ export default async function ShipmentsPage() {
     orderBy: { createdAt: 'desc' },
   })
 
+  const role = (session?.user as any)?.role
+  const canCreate = ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR', 'WAREHOUSE_OPS'].includes(role)
+
   return (
     <div>
-      <PageHeader title="Shipments" description="Outbound shipment tracking" />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Shipments</h1>
+          <p className="text-sm text-slate-500 mt-1">Outbound shipment tracking</p>
+        </div>
+        {canCreate && (
+          <Link href="/shipments/new" className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium text-white" style={{ background: '#1a2744' }}>
+            <Plus className="h-4 w-4" />New Shipment
+          </Link>
+        )}
+      </div>
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b">

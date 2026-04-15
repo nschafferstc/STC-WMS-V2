@@ -1,25 +1,75 @@
-import React from 'react'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { PageHeader } from '@/components/shared/page-header'
+'use client'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { formatDate } from '@/lib/utils'
-import { notFound } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
-export default async function TransferDetailPage({ params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
-  if (!session) return null
+// Client wrapper — data fetched on client
+export default function TransferDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
+  const [transfer, setTransfer] = React.useState<any>(null)
+  const [loading, setLoading] = React.useState<string | null>(null)
 
-  const transfer = await prisma.transferOrder.findUnique({
-    where: { id: parseInt(params.id) },
-    include: { from_warehouse: true, to_warehouse: true, lines: { include: { sku: true } } },
-  })
-  if (!transfer) notFound()
+  React.useEffect(() => {
+    fetch(`/api/transfers/${params.id}`).then(r => r.json()).then(setTransfer)
+  }, [params.id])
+
+  const action = async (status: string) => {
+    setLoading(status)
+    await fetch(`/api/transfers/${params.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    const updated = await fetch(`/api/transfers/${params.id}`).then(r => r.json())
+    setTransfer(updated)
+    setLoading(null)
+  }
+
+  if (!transfer) return <div className="p-8 text-slate-500">Loading...</div>
+
+  const formatDate = (d: string) => d ? new Date(d).toLocaleDateString() : '—'
 
   return (
     <div>
-      <PageHeader title={transfer.code} description="Transfer Order Detail" />
+      <Link href="/transfers" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 mb-4">
+        <ArrowLeft className="h-4 w-4 mr-1" /> Back to Transfers
+      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-slate-900 font-mono">{transfer.code}</h1>
+            <StatusBadge status={transfer.status} />
+          </div>
+          <div className="text-sm text-slate-500">
+            {transfer.from_warehouse?.stc_reference_name} → {transfer.to_warehouse?.stc_reference_name}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {transfer.status === 'PENDING' && (
+            <Button onClick={() => action('CONFIRMED')} disabled={loading === 'CONFIRMED'} style={{ background: '#1a2744', color: 'white' }} size="sm">
+              {loading === 'CONFIRMED' ? 'Confirming...' : 'Confirm Transfer'}
+            </Button>
+          )}
+          {transfer.status === 'CONFIRMED' && (
+            <Button onClick={() => action('IN_TRANSIT')} disabled={loading === 'IN_TRANSIT'} style={{ background: '#f4811f', color: 'white' }} size="sm">
+              {loading === 'IN_TRANSIT' ? '...' : 'Mark In Transit'}
+            </Button>
+          )}
+          {transfer.status === 'IN_TRANSIT' && (
+            <Button onClick={() => action('RECEIVED')} disabled={loading === 'RECEIVED'} style={{ background: '#1a2744', color: 'white' }} size="sm">
+              {loading === 'RECEIVED' ? 'Processing...' : 'Mark Received'}
+            </Button>
+          )}
+          {!['RECEIVED', 'CANCELLED'].includes(transfer.status) && (
+            <Button variant="outline" size="sm" onClick={() => action('CANCELLED')} className="text-red-600 border-red-200">
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white rounded-lg border border-slate-200 p-5">

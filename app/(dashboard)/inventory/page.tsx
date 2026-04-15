@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { PageHeader } from '@/components/shared/page-header'
+import Link from 'next/link'
 
 export default async function InventoryPage({ searchParams }: { searchParams: { warehouse?: string; search?: string } }) {
   const session = await getServerSession(authOptions)
@@ -44,10 +45,20 @@ export default async function InventoryPage({ searchParams }: { searchParams: { 
 
   return (
     <div>
-      <PageHeader
-        title="Inventory"
-        description="Real-time stock levels across all warehouses"
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Inventory</h1>
+          <p className="text-sm text-slate-500 mt-1">Real-time stock levels across all warehouses</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/inventory/cycle-count" className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50">
+            Cycle Count
+          </Link>
+          <Link href="/inventory/adjust" className="inline-flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium text-white" style={{ background: '#1a2744' }}>
+            Adjust Stock
+          </Link>
+        </div>
+      </div>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">

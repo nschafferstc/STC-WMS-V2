@@ -59,8 +59,18 @@ export default async function ASNDetailPage({ params }: { params: { id: string }
           <div className="text-sm text-slate-500">
             {asn.client.name} · {asn.warehouse.stc_reference_name}
             {asn.expected_date && ` · Expected: ${formatDate(asn.expected_date)}`}
+            {(asn as any).carrier && ` · ${(asn as any).carrier}`}
+            {(asn as any).pro_number && ` · PRO: ${(asn as any).pro_number}`}
           </div>
         </div>
+        {isOpen && canReceive && (
+          <Link
+            href={`/receiving/${asn.id}/edit`}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Edit ASN
+          </Link>
+        )}
       </div>
 
       {/* Summary cards */}

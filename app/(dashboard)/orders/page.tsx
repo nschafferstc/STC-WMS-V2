@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 
 export default async function OrdersPage({ searchParams }: { searchParams: { status?: string; warehouse?: string } }) {
@@ -103,12 +103,17 @@ export default async function OrdersPage({ searchParams }: { searchParams: { sta
               orders.map(order => (
                 <tr key={order.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="font-medium text-blue-600 hover:underline font-mono text-xs"
-                    >
-                      {order.code}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      {(order as any).is_priority && (
+                        <Zap className="h-3 w-3 text-orange-500 flex-shrink-0" title="Priority Order" />
+                      )}
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="font-medium text-blue-600 hover:underline font-mono text-xs"
+                      >
+                        {order.code}
+                      </Link>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-slate-700">{order.client.name}</td>
                   <td className="px-4 py-3 text-slate-600">{order.warehouse.stc_reference_name}</td>
