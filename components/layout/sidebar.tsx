@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
-  LayoutDashboard, Package, Truck, ClipboardList, Warehouse,
-  FolderKanban, ArrowDownToLine, Ship, Settings, AlertTriangle,
-  BoxIcon, ArrowLeftRight, RotateCcw, BarChart3, FileText, MonitorDot
+  LayoutDashboard, ClipboardList, ArrowDownToLine, Ship, Settings,
+  AlertTriangle, BoxIcon, ArrowLeftRight, RotateCcw, BarChart3, MonitorDot
 } from 'lucide-react'
 
 interface NavItem {
@@ -17,20 +16,20 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  // STC staff see Command Center as home
   { href: '/command-center', label: 'Command Center', icon: MonitorDot, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/warehouses', label: 'Warehouses', icon: Warehouse },
-  { href: '/inventory', label: 'Inventory', icon: BoxIcon },
+  // Warehouse ops / client users see Dashboard instead
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['WAREHOUSE_OPS', 'CLIENT_USER', 'STC_READ_ONLY'] },
+  // Core operations — visible to all authenticated users
   { href: '/receiving', label: 'Receiving', icon: ArrowDownToLine },
   { href: '/orders', label: 'Orders', icon: ClipboardList },
-  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight },
-  { href: '/returns', label: 'Returns', icon: RotateCcw },
+  { href: '/inventory', label: 'Inventory', icon: BoxIcon },
   { href: '/shipments', label: 'Shipments', icon: Ship },
-  { href: '/packages', label: 'Packages', icon: Package },
+  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] },
+  { href: '/returns', label: 'Returns', icon: RotateCcw },
   { href: '/discrepancies', label: 'Discrepancies', icon: AlertTriangle },
+  // Analytics & Admin
   { href: '/reports', label: 'Reports', icon: BarChart3, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER', 'STC_COORDINATOR'] },
-  { href: '/audit', label: 'Audit Log', icon: FileText, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER'] },
   { href: '/admin', label: 'Admin', icon: Settings, roles: ['STC_EXECUTIVE', 'STC_OPS_MANAGER'] },
 ]
 

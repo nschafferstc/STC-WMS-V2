@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { InventoryTabs } from '@/components/inventory/inventory-tabs'
 
 const REASONS = [
   'CYCLE_COUNT',
@@ -66,10 +65,12 @@ export default function InventoryAdjustPage() {
 
   return (
     <div>
-      <Link href="/inventory" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 mb-4">
-        <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory
-      </Link>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Inventory Adjustment</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Inventory</h1>
+        <p className="text-sm text-slate-500 mt-1">Manual stock adjustments and corrections</p>
+      </div>
+      <InventoryTabs />
+      <h2 className="text-lg font-semibold text-slate-800 mb-4">Inventory Adjustment</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg border p-6">

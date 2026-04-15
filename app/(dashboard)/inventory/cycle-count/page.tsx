@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { InventoryTabs } from '@/components/inventory/inventory-tabs'
 import Link from 'next/link'
-import { ArrowLeft, Plus, ClipboardCheck } from 'lucide-react'
+import { Plus, ClipboardCheck } from 'lucide-react'
 
 export default function CycleCountPage() {
   const router = useRouter()
@@ -44,12 +45,14 @@ export default function CycleCountPage() {
 
   return (
     <div>
-      <Link href="/inventory" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 mb-4">
-        <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory
-      </Link>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Inventory</h1>
+        <p className="text-sm text-slate-500 mt-1">Scheduled and ad-hoc inventory counts</p>
+      </div>
+      <InventoryTabs />
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Cycle Counts</h1>
+          <h2 className="text-lg font-semibold text-slate-800">Cycle Counts</h2>
           <p className="text-sm text-slate-500 mt-1">Physical inventory counts with variance tracking</p>
         </div>
         <Button onClick={() => setShowNew(true)} style={{ background: '#1a2744', color: 'white' }}>

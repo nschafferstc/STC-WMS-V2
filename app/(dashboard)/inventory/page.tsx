@@ -2,7 +2,7 @@ import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PageHeader } from '@/components/shared/page-header'
+import { InventoryTabs } from '@/components/inventory/inventory-tabs'
 import Link from 'next/link'
 
 export default async function InventoryPage({ searchParams }: { searchParams: { warehouse?: string; search?: string; client_id?: string } }) {
@@ -62,6 +62,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: { 
           </Link>
         </div>
       </div>
+
+      <InventoryTabs />
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">

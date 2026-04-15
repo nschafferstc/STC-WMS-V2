@@ -46,7 +46,7 @@ export default async function OrdersPage({
     orderBy: { updatedAt: 'desc' },
   })
 
-  const statusOptions = ['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'SENT_TO_WAREHOUSE', 'WAREHOUSE_CONFIRMED', 'ALLOCATED', 'PARTIAL', 'READY', 'AT_RISK', 'COMPLETE', 'CANCELLED']
+  const statusOptions = ['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'SENT_TO_WAREHOUSE', 'WAREHOUSE_CONFIRMED', 'READY', 'AT_RISK', 'COMPLETE', 'CANCELLED']
   const hasFilter = !!(searchParams.client_id || searchParams.project_id || searchParams.warehouse_id)
 
   return (

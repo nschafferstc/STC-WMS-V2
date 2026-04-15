@@ -2,7 +2,7 @@ import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PageHeader } from '@/components/shared/page-header'
+import { InventoryTabs } from '@/components/inventory/inventory-tabs'
 import { getInventoryAgeDays, formatDate } from '@/lib/utils'
 
 export default async function InventoryLotsPage() {
@@ -19,7 +19,11 @@ export default async function InventoryLotsPage() {
 
   return (
     <div>
-      <PageHeader title="Inventory Lots" description="Lot-level receiving and aging tracking" />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Inventory</h1>
+        <p className="text-sm text-slate-500 mt-1">Lot-level receiving and aging tracking</p>
+      </div>
+      <InventoryTabs />
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b">
