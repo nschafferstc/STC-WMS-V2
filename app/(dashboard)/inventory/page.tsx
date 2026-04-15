@@ -5,27 +5,30 @@ import { authOptions } from '@/lib/auth'
 import { PageHeader } from '@/components/shared/page-header'
 import Link from 'next/link'
 
-export default async function InventoryPage({ searchParams }: { searchParams: { warehouse?: string; search?: string } }) {
+export default async function InventoryPage({ searchParams }: { searchParams: { warehouse?: string; search?: string; client_id?: string } }) {
   const session = await getServerSession(authOptions)
   const warehouseId = (session?.user as any)?.warehouseId
 
   const where: any = {}
   if (warehouseId) where.warehouse_id = warehouseId
   if (searchParams.warehouse) where.warehouse_id = parseInt(searchParams.warehouse)
+  if (searchParams.client_id) where.sku = { client_id: parseInt(searchParams.client_id) }
 
-  const inventory = await prisma.inventory.findMany({
-    where,
-    include: {
-      sku: { include: { client: true } },
-      warehouse: true,
-    },
-    orderBy: [{ warehouse: { code: 'asc' } }, { sku: { code: 'asc' } }],
-  })
-
-  const warehouses = await prisma.warehouse.findMany({
-    where: warehouseId ? { id: warehouseId } : undefined,
-    orderBy: { code: 'asc' },
-  })
+  const [inventory, warehouses, clients] = await Promise.all([
+    prisma.inventory.findMany({
+      where,
+      include: {
+        sku: { include: { client: true } },
+        warehouse: true,
+      },
+      orderBy: [{ warehouse: { code: 'asc' } }, { sku: { code: 'asc' } }],
+    }),
+    prisma.warehouse.findMany({
+      where: warehouseId ? { id: warehouseId } : undefined,
+      orderBy: { code: 'asc' },
+    }),
+    prisma.client.findMany({ orderBy: { name: 'asc' } }),
+  ])
 
   // Apply search filter
   const filtered = searchParams.search
@@ -78,29 +81,46 @@ export default async function InventoryPage({ searchParams }: { searchParams: { 
 
       {/* Filters */}
       <div className="flex gap-3 mb-4">
-        <form className="flex gap-3">
+        <form className="flex flex-wrap gap-2 items-center">
           <input
             name="search"
             defaultValue={searchParams.search}
             placeholder="Search SKU or description..."
-            className="h-10 rounded-md border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-64"
+            className="h-9 rounded border border-slate-200 bg-white px-2 text-sm w-56"
           />
+          {!warehouseId && (
+            <select
+              name="warehouse"
+              defaultValue={searchParams.warehouse}
+              className="h-9 rounded border border-slate-200 bg-white px-2 text-sm"
+            >
+              <option value="">All Warehouses</option>
+              {warehouses.map(w => (
+                <option key={w.id} value={w.id}>{w.stc_reference_name}</option>
+              ))}
+            </select>
+          )}
           <select
-            name="warehouse"
-            defaultValue={searchParams.warehouse}
-            className="h-10 rounded-md border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            name="client_id"
+            defaultValue={searchParams.client_id ?? ''}
+            className="h-9 rounded border border-slate-200 bg-white px-2 text-sm"
           >
-            <option value="">All Warehouses</option>
-            {warehouses.map(w => (
-              <option key={w.id} value={w.id}>{w.stc_reference_name}</option>
+            <option value="">All Clients</option>
+            {clients.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
           <button
             type="submit"
-            className="h-10 px-4 rounded-md bg-slate-700 text-white text-sm font-medium hover:bg-slate-800"
+            className="h-9 px-3 rounded bg-slate-700 text-white text-sm font-medium"
           >
             Filter
           </button>
+          {(searchParams.client_id || searchParams.warehouse || searchParams.search) && (
+            <a href="/inventory" className="h-9 px-3 flex items-center rounded border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">
+              Clear
+            </a>
+          )}
         </form>
       </div>
 

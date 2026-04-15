@@ -1,42 +1,58 @@
 import React from 'react'
 import { prisma } from '@/lib/prisma'
-import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { formatDate } from '@/lib/utils'
+import Link from 'next/link'
+
+const DISCREPANCY_TYPES = ['BOX_CRUSHED', 'WATER_DAMAGE', 'PACKAGING_DAMAGE', 'MISSING_ITEM', 'OVERAGE', 'WRONG_ITEM', 'OTHER']
 
 export default async function DiscrepanciesPage({
   searchParams,
 }: {
-  searchParams: { status?: string }
+  searchParams: { status?: string; type?: string; search?: string }
 }) {
+  const where: any = {}
+  if (searchParams.status) where.status = searchParams.status
+  if (searchParams.type) where.type = searchParams.type
+
   const discrepancies = await prisma.discrepancy.findMany({
-    where: searchParams.status ? { status: searchParams.status as any } : undefined,
+    where,
     orderBy: { createdAt: 'desc' },
   })
 
-  // Counts always based on all records for the summary cards
-  const allDiscrepancies = searchParams.status
-    ? await prisma.discrepancy.findMany({ orderBy: { createdAt: 'desc' } })
+  // Apply text search client-side (source_ref or description)
+  const filtered = searchParams.search
+    ? discrepancies.filter(d =>
+        d.source_ref.toLowerCase().includes(searchParams.search!.toLowerCase()) ||
+        d.description.toLowerCase().includes(searchParams.search!.toLowerCase())
+      )
     : discrepancies
 
+  // Counts for summary cards — always based on unfiltered set
+  const allDiscrepancies = await prisma.discrepancy.findMany()
   const openCount = allDiscrepancies.filter(d => d.status === 'OPEN').length
   const underReviewCount = allDiscrepancies.filter(d => d.status === 'UNDER_REVIEW').length
   const resolvedCount = allDiscrepancies.filter(d => d.status === 'RESOLVED').length
-  const totalCount = allDiscrepancies.length
 
-  const filterCounts: Record<string, number> = {
-    all: totalCount,
-    OPEN: openCount,
-    UNDER_REVIEW: underReviewCount,
-    RESOLVED: resolvedCount,
+  const hasFilter = !!(searchParams.type || searchParams.search)
+
+  const buildStatusHref = (s: string) => {
+    const params = new URLSearchParams({
+      ...(s && s !== 'all' ? { status: s } : {}),
+      ...(searchParams.type ? { type: searchParams.type } : {}),
+      ...(searchParams.search ? { search: searchParams.search } : {}),
+    })
+    return `/discrepancies${params.toString() ? `?${params}` : ''}`
   }
 
   return (
     <div>
-      <PageHeader
-        title="Discrepancies"
-        description="Receiving exceptions and inventory discrepancies"
-      />
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Discrepancies</h1>
+          <p className="text-sm text-slate-500 mt-1">Receiving exceptions and inventory discrepancies</p>
+        </div>
+      </div>
 
       {/* Summary cards */}
       <div className="flex gap-4 mb-6">
@@ -54,17 +70,40 @@ export default async function DiscrepanciesPage({
         </div>
       </div>
 
+      {/* Filters */}
+      <form className="flex flex-wrap gap-2 mb-4 items-center">
+        <input
+          name="search"
+          defaultValue={searchParams.search ?? ''}
+          placeholder="Search source ref or description..."
+          className="h-9 rounded border border-slate-200 bg-white px-2 text-sm w-56"
+        />
+        <select name="type" defaultValue={searchParams.type ?? ''}
+          className="h-9 rounded border border-slate-200 bg-white px-2 text-sm">
+          <option value="">All Types</option>
+          {DISCREPANCY_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+        </select>
+        {searchParams.status && <input type="hidden" name="status" value={searchParams.status} />}
+        <button type="submit" className="h-9 px-3 rounded bg-slate-700 text-white text-sm font-medium">Filter</button>
+        {hasFilter && (
+          <Link href={searchParams.status ? `/discrepancies?status=${searchParams.status}` : '/discrepancies'}
+            className="h-9 px-3 flex items-center rounded border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">
+            Clear
+          </Link>
+        )}
+      </form>
+
       {/* Status filter pills */}
       <div className="flex gap-2 mb-4">
         {(['all', 'OPEN', 'UNDER_REVIEW', 'RESOLVED'] as const).map(s => {
           const isAll = s === 'all'
           const isActive = isAll ? !searchParams.status : searchParams.status === s
           const label = isAll ? 'All' : s.replace(/_/g, ' ')
-          const count = filterCounts[s]
+          const count = isAll ? allDiscrepancies.length : allDiscrepancies.filter(d => d.status === s).length
           return (
-            <a
+            <Link
               key={s}
-              href={isAll ? '/discrepancies' : `/discrepancies?status=${s}`}
+              href={buildStatusHref(s)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 isActive
                   ? 'bg-[#1a2744] text-white border-[#1a2744]'
@@ -72,7 +111,7 @@ export default async function DiscrepanciesPage({
               }`}
             >
               {label} ({count})
-            </a>
+            </Link>
           )
         })}
       </div>
@@ -90,27 +129,26 @@ export default async function DiscrepanciesPage({
             </tr>
           </thead>
           <tbody>
-            {discrepancies.length === 0 ? (
+            {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
                   No discrepancies found
                 </td>
               </tr>
-            ) : discrepancies.map(d => (
+            ) : filtered.map(d => (
               <tr
                 key={d.id}
                 className={`border-b border-slate-50 last:border-0 hover:bg-slate-50 cursor-pointer ${d.status === 'OPEN' ? 'bg-red-50/20' : ''}`}
                 onClick={() => { window.location.href = `/discrepancies/${d.id}` }}
               >
-                <td className="px-4 py-3 font-mono text-xs font-medium text-blue-600">
-                  DISC-{String(d.id).padStart(4, '0')}
+                <td className="px-4 py-3">
+                  <Link href={`/discrepancies/${d.id}`} className="font-mono text-xs font-medium text-blue-600 hover:underline">
+                    DISC-{String(d.id).padStart(4, '0')}
+                  </Link>
                 </td>
                 <td className="px-4 py-3 text-slate-700">{d.type.replace(/_/g, ' ')}</td>
                 <td className="px-4 py-3 font-mono text-xs">{d.source_ref}</td>
-                <td
-                  className="px-4 py-3 text-slate-600 max-w-xs truncate"
-                  title={d.description}
-                >
+                <td className="px-4 py-3 text-slate-600 max-w-xs truncate" title={d.description}>
                   {d.description}
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={d.status} /></td>
@@ -120,7 +158,7 @@ export default async function DiscrepanciesPage({
           </tbody>
         </table>
         <div className="px-4 py-2 bg-slate-50 border-t text-xs text-slate-500">
-          {discrepancies.length} records
+          {filtered.length} records
         </div>
       </div>
     </div>
